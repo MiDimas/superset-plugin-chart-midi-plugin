@@ -16,10 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { t, validateNonEmpty } from '@superset-ui/core';
+import {NumberFormats, t, validateNonEmpty} from '@superset-ui/core';
 import {
-  ControlPanelConfig,
-  sections,
+  ControlPanelConfig, D3_FORMAT_OPTIONS,
   sharedControls,
 } from '@superset-ui/chart-controls';
 
@@ -107,11 +106,11 @@ const config: ControlPanelConfig = {
       controlSetRows: [
         [
           {
-            name: 'cols',
+            name: 'col',
             config: {
-              ...sharedControls.groupby,
-              label: t('Columns'),
-              description: t('Columns to group by'),
+              ...sharedControls.series,
+              label: t('Column'),
+              description: t('Column to group by'),
             },
           },
         ],
@@ -136,7 +135,7 @@ const config: ControlPanelConfig = {
       ],
     },
     {
-      label: t('Hello Controls!'),
+      label: t('Custom Viz Plugin'),
       expanded: true,
       controlSetRows: [
         [
@@ -144,11 +143,26 @@ const config: ControlPanelConfig = {
             name: 'header_text',
             config: {
               type: 'TextControl',
-              default: 'Hello, World!',
+              default: 'MidiPlugin',
               renderTrigger: true,
               // ^ this makes it apply instantaneously, without triggering a "run query" button
               label: t('Header Text'),
               description: t('The text you want to see in the header'),
+            },
+          },
+        ],
+        [
+          {
+            name: 'format_numbers',
+            config: {
+              type: 'SelectControl',
+              freeForm: true,
+              label: t('Numbers_format'),
+              default: NumberFormats.SMART_NUMBER,
+              renderTrigger: true,
+              clearable: false,
+              choices: D3_FORMAT_OPTIONS,
+              description: t('D3 time format for numbers columns'),
             },
           },
         ],

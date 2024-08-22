@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useEffect, createRef } from 'react';
-import { styled } from '@superset-ui/core';
+import React, {useEffect, createRef, ReactChild} from 'react';
+import {getNumberFormatter, styled, TimeseriesDataRecord} from '@superset-ui/core';
 import { SupersetPluginChartMidiPluginProps, SupersetPluginChartMidiPluginStylesProps } from './types';
+
 
 // The following Styles component is a <div> element, which has been styled using Emotion
 // For docs, visit https://emotion.sh/docs/styled
@@ -33,20 +34,40 @@ const Styles = styled.div<SupersetPluginChartMidiPluginStylesProps>`
   border-radius: ${({ theme }) => theme.gridUnit * 2}px;
   height: ${({ height }) => height}px;
   width: ${({ width }) => width}px;
+`;
 
-  h3 {
-    /* You can use your props to control CSS! */
-    margin-top: 0;
-    margin-bottom: ${({ theme }) => theme.gridUnit * 3}px;
-    font-size: ${({ theme, headerFontSize }) =>
-      theme.typography.sizes[headerFontSize]}px;
-    font-weight: ${({ theme, boldText }) =>
-      theme.typography.weights[boldText ? 'bold' : 'normal']};
+const CustomContainer = styled.div<SupersetPluginChartMidiPluginStylesProps>`
+  background-color: inherit;
+  padding: ${({theme})=>theme.gridUnit * 4}px;
+  display: flex;
+  justify-content: space-between;
+  flex-flow: row nowrap;
+  column-gap: 30px;
+  font-family: Geologica, sans-serif;
+  height: 100%;
+
+  .HC-data-list{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-basis: 33%;
   }
-
-  pre {
-    height: ${({ theme, headerFontSize, height }) =>
-      height - theme.gridUnit * 12 - theme.typography.sizes[headerFontSize]}px;
+  .HC-name{
+    font-size: 20px;
+    font-weight: 500;
+    text-transform: uppercase;
+    line-height: 24px;
+  }
+  .HC-value{
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 70px;
+  }
+  .HC-data-list:nth-child(2) .HC-value{
+    color: #00A8A8;
+  }
+  .HC-data-list:nth-child(3) .HC-value{
+    color: #959EAB;
   }
 `;
 
@@ -61,7 +82,7 @@ const Styles = styled.div<SupersetPluginChartMidiPluginStylesProps>`
 export default function SupersetPluginChartMidiPlugin(props: SupersetPluginChartMidiPluginProps) {
   // height and width are the height and width of the DOM element as it exists in the dashboard.
   // There is also a `data` prop, which is, of course, your DATA 🎉
-  const { data, height, width } = props;
+  const { data, height, width, filters } = props;
 
   const rootElem = createRef<HTMLDivElement>();
 
@@ -72,18 +93,69 @@ export default function SupersetPluginChartMidiPlugin(props: SupersetPluginChart
     console.log('Plugin element', root);
   });
 
-  console.log('Plugin props', props);
+  const formatNumbers = props.formatNumbers;
+  const formater = getNumberFormatter(formatNumbers);
 
-  return (
-    <Styles
-      ref={rootElem}
-      boldText={props.boldText}
-      headerFontSize={props.headerFontSize}
-      height={height}
-      width={width}
-    >
-      <h3>{props.headerText}</h3>
-      <pre>${JSON.stringify(data, null, 2)}</pre>
-    </Styles>
-  );
+  console.log('Plugin props', props);
+  const isNumber = (n: any) => !isNaN(parseFloat(n)) && isFinite(n);
+
+  const component = (metrics: TimeseriesDataRecord): Array<ReactChild> => {
+    const arr = [];
+    if(metrics) {
+      for(const metric in metrics){
+        const value = metrics[metric];
+        const isNum = isNumber(value);
+        arr.push(
+            <div className='HC-data-list' key={metric}>
+              <span className='HC-name'>{metric}</span>
+              <span className='HC-value'>{
+                  isNum
+                      ? formater(Number(value))
+                      : value
+              }</span>
+            </div>
+        )
+      }
+    }
+    return arr;
+  }
+  if(data.length===1){
+    return (
+        <div>
+            <h3>{props.headerText}</h3>
+            <CustomContainer
+                ref={rootElem}
+                boldText={props.boldText}
+                headerFontSize={props.headerFontSize}
+                height={height}
+                width={width}
+            >
+                {
+                    component(data[0])
+                }
+            </CustomContainer>
+            {filters &&
+                <div>
+                <h3>filtered by field(s):</h3>
+                {Array.isArray(filters) && filters.map((filter) => (
+                    <div key={filter.subject}>{filter.subject}</div>
+                ))}
+                </div>
+            }
+        </div>
+
+    )
+  }
+    return (
+        <Styles
+            ref={rootElem}
+            boldText={props.boldText}
+            headerFontSize={props.headerFontSize}
+            height={height}
+            width={width}
+        >
+            <h1>Неверные данные</h1>
+
+        </Styles>
+    );
 }

@@ -17,6 +17,7 @@
  * under the License.
  */
 import {
+  DataRecordFilters,
   QueryFormData,
   supersetTheme,
   TimeseriesDataRecord,
@@ -31,6 +32,7 @@ export interface SupersetPluginChartMidiPluginStylesProps {
 
 interface SupersetPluginChartMidiPluginCustomizeProps {
   headerText: string;
+  formatNumbers: string;
 }
 
 export type SupersetPluginChartMidiPluginQueryFormData = QueryFormData &
@@ -41,4 +43,5 @@ export type SupersetPluginChartMidiPluginProps = SupersetPluginChartMidiPluginSt
   SupersetPluginChartMidiPluginCustomizeProps & {
     data: TimeseriesDataRecord[];
     // add typing here for the props you pass in from transformProps.ts!
+    filters?: DataRecordFilters;
   };
